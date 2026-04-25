@@ -111,7 +111,7 @@ ok "KDE Plasma установлен"
 # ── Шаг 3: Звук ──────────────────────────────────
 step "Установка PipeWire..."
 apt-get install -y -qq \
-    pipewire pipewire-pulse pipewire-alsa wireplumber
+    pipewire pipewire-pulse wireplumber pipewire-audio
 ok "PipeWire установлен"
 
 # ── Шаг 4: Зависимости сборки ─────────────────────
