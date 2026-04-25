@@ -127,8 +127,10 @@ apt-get install -y -qq \
     qt6-base-dev qt6-declarative-dev qt6-wayland-dev \
     libkf6i18n-dev libkf6config-dev \
     libkf6coreaddons-dev libkf6windowsystem-dev libkf6package-dev \
-    libkf6notifications-dev libkf6dbusaddons-dev \
-    libkf6service-dev \
+    libkf6notifications-dev libkf6dbusaddons-dev libkf6service-dev \
+    libkf6kcmutils-dev libkf6globalaccel-dev libkf6kio-dev \
+    libkf6svg-dev libkf6iconthemes-dev libkf6configwidgets-dev \
+    libkf6xmlgui-dev libkf6guiaddons-dev libkf6crash-dev \
     flatpak
 ok "Зависимости установлены"
 
