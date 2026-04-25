@@ -29,8 +29,8 @@ fi
 
 UBUNTU_VER=$(grep VERSION_ID /etc/os-release | cut -d'"' -f2)
 info "Обнаружена Ubuntu $UBUNTU_VER"
-if [[ "$UBUNTU_VER" != "22.04" && "$UBUNTU_VER" != "24.04" ]]; then
-    warn "Скрипт тестировался на 22.04 и 24.04. Версия $UBUNTU_VER может работать нестабильно."
+if [[ "$UBUNTU_VER" < "25.04" ]]; then
+    warn "Скрипт оптимизирован для Ubuntu 25.04+. Версия $UBUNTU_VER может работать нестабильно."
     read -rp "Продолжить всё равно? [y/N]: " _c
     [[ "$_c" != "y" && "$_c" != "Y" ]] && die "Установка отменена."
 fi
