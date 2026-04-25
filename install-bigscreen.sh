@@ -115,15 +115,20 @@ apt-get install -y -qq \
 ok "PipeWire установлен"
 
 # ── Шаг 4: Зависимости сборки ─────────────────────
+step "Включение universe репозитория..."
+apt-add-repository universe -y > /dev/null 2>&1
+apt-get update -qq
+ok "Universe включён"
+
 step "Установка зависимостей для сборки..."
 apt-get install -y -qq \
     git cmake make ninja-build build-essential \
-    extra-cmake-modules \
+    extra-cmake-modules libplasma-dev \
     qt6-base-dev qt6-declarative-dev qt6-wayland-dev \
-    libkf6plasma-dev libkf6i18n-dev libkf6config-dev \
-    libkf6coreaddons-dev libkf6windowsystem-dev \
+    libkf6i18n-dev libkf6config-dev \
+    libkf6coreaddons-dev libkf6windowsystem-dev libkf6package-dev \
     libkf6notifications-dev libkf6dbusaddons-dev \
-    libkf6service-dev libkf6activities-dev \
+    libkf6service-dev \
     flatpak
 ok "Зависимости установлены"
 
