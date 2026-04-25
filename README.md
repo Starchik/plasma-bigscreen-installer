@@ -11,7 +11,7 @@
 Ubuntu Server уже установлен? Одна команда — и готово:
 
 ```bash
-bash <(curl -s https://raw.githubusercontent.com/Starchik/plasma-bigscreen-installer/main/install-bigscreen.sh)
+curl -s https://raw.githubusercontent.com/Starchik/plasma-bigscreen-installer/main/install-bigscreen.sh | sudo bash
 ```
 
 Скрипт сам всё спросит и установит. После перезагрузки система сразу загрузится в Plasma Bigscreen.
