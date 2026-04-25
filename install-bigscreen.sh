@@ -150,15 +150,40 @@ fi
 
 BUILD_TMP="$BUILD_DIR/plasma-bigscreen-build"
 mkdir -p "$BUILD_TMP"
+LOG_FILE="/tmp/bigscreen-build.log"
 
-cmake -S "$BIGSCREEN_SRC" -B "$BUILD_TMP" \
+info "Запуск cmake (конфигурация)..."
+if ! cmake -S "$BIGSCREEN_SRC" -B "$BUILD_TMP" \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=/usr/local \
     -G Ninja \
-    > /dev/null 2>&1
+    > "$LOG_FILE" 2>&1; then
+    echo ""
+    echo -e "${RED}${BOLD}✘ Ошибка cmake! Последние строки лога:${NC}"
+    tail -30 "$LOG_FILE"
+    echo ""
+    die "Сборка не удалась. Полный лог: $LOG_FILE"
+fi
+ok "cmake конфигурация завершена"
 
-ninja -C "$BUILD_TMP" -j"$(nproc)" > /dev/null 2>&1
-ninja -C "$BUILD_TMP" install > /dev/null 2>&1
+info "Компиляция (это займёт 20–40 мин, подожди)..."
+if ! ninja -C "$BUILD_TMP" -j"$(nproc)" >> "$LOG_FILE" 2>&1; then
+    echo ""
+    echo -e "${RED}${BOLD}✘ Ошибка компиляции! Последние строки лога:${NC}"
+    tail -30 "$LOG_FILE"
+    echo ""
+    die "Сборка не удалась. Полный лог: $LOG_FILE"
+fi
+ok "Компиляция завершена"
+
+info "Установка файлов..."
+if ! ninja -C "$BUILD_TMP" install >> "$LOG_FILE" 2>&1; then
+    echo ""
+    echo -e "${RED}${BOLD}✘ Ошибка установки! Последние строки лога:${NC}"
+    tail -30 "$LOG_FILE"
+    echo ""
+    die "Установка не удалась. Полный лог: $LOG_FILE"
+fi
 
 chown -R "$BIGSCREEN_USER:$BIGSCREEN_USER" "$BUILD_DIR"
 ok "Plasma Bigscreen собран и установлен"
