@@ -1,87 +1,96 @@
 # 📺 Plasma Bigscreen Auto-Installer
 
-Автоматическая установка [Plasma Bigscreen](https://plasma-bigscreen.org/) на базе **Arch Linux** для x86/x64 ПК (Fujitsu Esprimo, HTPC, мини-ПК и др.).
+Автоматическая установка [Plasma Bigscreen](https://plasma-bigscreen.org/) на **Ubuntu Server 22.04 / 24.04 LTS**.
 
-> Plasma Bigscreen — KDE-оболочка для телевизоров. Управление пультом, геймпадом или клавиатурой с дивана.
+> Plasma Bigscreen — KDE-оболочка для телевизоров и больших экранов. Управление пультом, геймпадом или клавиатурой прямо с дивана.
 
 ---
 
 ## 🚀 Быстрый старт
 
-1. Скачай и запиши [Arch Linux ISO](https://archlinux.org/download/) на флешку (через [Rufus](https://rufus.ie/) в режиме DD или [Etcher](https://etcher.balena.io/))
-2. Загрузись с флешки на своём ПК
-3. Выполни в консоли:
+Ubuntu Server уже установлен? Одна команда — и готово:
 
 ```bash
-curl -O https://raw.githubusercontent.com/YOUR_USERNAME/plasma-bigscreen-installer/main/install-bigscreen.sh
-bash install-bigscreen.sh
+bash <(curl -s https://raw.githubusercontent.com/Starchik/plasma-bigscreen-installer/main/install-bigscreen.sh)
 ```
 
-Скрипт сам спросит нужные данные и всё установит.
+Скрипт сам всё спросит и установит. После перезагрузки система сразу загрузится в Plasma Bigscreen.
 
 ---
 
 ## ⚙️ Что делает скрипт
 
-### Этап 1 (с Live USB, ~10–15 мин)
-- Размечает диск (EFI + Linux разделы)
-- Устанавливает Arch Linux
-- Устанавливает KDE Plasma, SDDM, PipeWire
-- Настраивает локаль, hostname, пользователя
-- Устанавливает загрузчик GRUB
-- Подготавливает скрипт второго этапа
+| Шаг | Действие | Время |
+|-----|----------|-------|
+| 1 | Обновление пакетов | ~1 мин |
+| 2 | KDE Plasma Desktop + SDDM | ~10 мин |
+| 3 | PipeWire (звук) | ~1 мин |
+| 4 | Зависимости сборки | ~3 мин |
+| 5 | Сборка Plasma Bigscreen из исходников | ~20–40 мин |
+| 6 | Регистрация Wayland-сессии | мгновенно |
+| 7 | Автологин в Bigscreen через SDDM | мгновенно |
+| 8 | Flatpak + Flathub | ~1 мин |
 
-### Этап 2 (после первой загрузки, ~20–25 мин)
-- Устанавливает `yay` (AUR helper)
-- Устанавливает `plasma-bigscreen-git` из AUR
-- Подключает Flathub
-- Настраивает автологин в Bigscreen
+**Итого: ~35–55 минут** в зависимости от скорости интернета и процессора.
 
 ---
 
 ## 🖥️ Требования
 
-| Параметр | Минимум |
-|---|---|
-| Архитектура | x86_64 |
-| RAM | 2 ГБ (рекомендуется 4 ГБ+) |
-| Диск | 20 ГБ+ |
-| Загрузка | UEFI |
-| Сеть | Ethernet (кабель) во время установки |
+| Параметр | Минимум | Рекомендуется |
+|----------|---------|---------------|
+| ОС | Ubuntu Server 22.04 | Ubuntu Server 24.04 LTS |
+| RAM | 2 ГБ | 4 ГБ+ |
+| Диск | 15 ГБ свободно | 30 ГБ+ |
+| Сеть | Ethernet | Ethernet |
+| Дисплей | HDMI / DisplayPort | HDMI |
 
 Протестировано на: **Fujitsu Esprimo**, обычных HTPC и мини-ПК.
 
 ---
 
-## 📦 Устанавливаемый софт
+## 📦 Что устанавливается
 
-- **Arch Linux** — основа системы
-- **KDE Plasma** + **SDDM** — рабочее окружение
-- **Plasma Bigscreen** — TV-интерфейс
-- **PipeWire** — звук
-- **Flatpak** + **Flathub** — магазин приложений
+- **KDE Plasma Desktop** — основа рабочего окружения
+- **SDDM** — менеджер входа с автологином
+- **Plasma Bigscreen** — TV-интерфейс (сборка из исходников)
+- **PipeWire + WirePlumber** — современная звуковая система
+- **Flatpak + Flathub** — магазин приложений
 
-### После установки можно добавить:
+---
+
+## 🎬 Рекомендуемые приложения
+
+После первой загрузки в Bigscreen можно установить:
+
 ```bash
-sudo pacman -S kodi          # Медиацентр
-sudo pacman -S steam         # Steam
-flatpak install io.github.msaintfelix.VacuumTube  # YouTube
-flatpak install com.github.iwalton3.jellyfin-media-player  # Jellyfin
+# Медиацентр Kodi
+sudo apt install kodi
+
+# Jellyfin (стриминг своей медиатеки)
+flatpak install flathub com.github.iwalton3.jellyfin-media-player
+
+# YouTube
+flatpak install flathub io.github.msaintfelix.VacuumTube
+
+# Steam
+sudo apt install steam
 ```
 
 ---
 
-## ⚠️ Предупреждения
+## ⚠️ Важно
 
-- **Скрипт полностью сотрёт выбранный диск.** Перед запуском убедись, что выбрал правильный диск.
-- Plasma Bigscreen пока в стадии активной разработки (pre-release), возможны баги.
-- HDMI-CEC (управление ТВ-пультом) работает на большинстве материнских плат, но не на всех.
+- Plasma Bigscreen находится в активной разработке (pre-release) — возможны баги
+- Скрипт **не трогает диск** и **не переустанавливает ОС** — работает поверх Ubuntu Server
+- Если на машине уже стоял другой display manager (GDM, LightDM) — скрипт переключит на SDDM автоматически
+- HDMI-CEC (управление ТВ-пультом) работает на большинстве материнских плат
 
 ---
 
 ## 🐛 Проблемы?
 
-Открой [Issue](../../issues) с описанием проблемы и моделью ПК.
+Открой [Issue](../../issues) с описанием ошибки, версией Ubuntu и моделью ПК.
 
 ---
 
