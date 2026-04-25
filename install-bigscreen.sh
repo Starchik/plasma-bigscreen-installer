@@ -5,7 +5,7 @@
 # ║   Запускать на уже установленном Ubuntu Server  ║
 # ╚══════════════════════════════════════════════════╝
 
-set -e
+# set -e disabled — используем явные проверки
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -136,53 +136,55 @@ ok "Зависимости установлены"
 step "Сборка Plasma Bigscreen из исходников (20–40 мин)..."
 
 BUILD_DIR="$USER_HOME/kde-src"
-mkdir -p "$BUILD_DIR"
+LOG_FILE="/tmp/bigscreen-build.log"
+
+mkdir -p "$BUILD_DIR" || die "Не могу создать $BUILD_DIR"
 chown "$BIGSCREEN_USER:$BIGSCREEN_USER" "$BUILD_DIR"
 
 BIGSCREEN_SRC="$BUILD_DIR/plasma-bigscreen"
 if [[ -d "$BIGSCREEN_SRC" ]]; then
-    info "Исходники уже есть, обновляем..."
-    git -C "$BIGSCREEN_SRC" pull --ff-only > /dev/null 2>&1 || true
-else
-    git clone https://invent.kde.org/plasma/plasma-bigscreen.git \
-        "$BIGSCREEN_SRC" > /dev/null 2>&1
+    info "Исходники уже есть, пересоздаём для чистой сборки..."
+    rm -rf "$BIGSCREEN_SRC"
 fi
 
+info "Клонирование plasma-bigscreen..."
+if ! git clone https://invent.kde.org/plasma/plasma-bigscreen.git "$BIGSCREEN_SRC"; then
+    die "Не удалось клонировать репозиторий. Проверь интернет-соединение."
+fi
+ok "Исходники получены"
+
 BUILD_TMP="$BUILD_DIR/plasma-bigscreen-build"
+rm -rf "$BUILD_TMP"
 mkdir -p "$BUILD_TMP"
-LOG_FILE="/tmp/bigscreen-build.log"
 
 info "Запуск cmake (конфигурация)..."
-if ! cmake -S "$BIGSCREEN_SRC" -B "$BUILD_TMP" \
+echo "--- cmake log ---" > "$LOG_FILE"
+cmake -S "$BIGSCREEN_SRC" -B "$BUILD_TMP" \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=/usr/local \
-    -G Ninja \
-    > "$LOG_FILE" 2>&1; then
+    -G Ninja 2>&1 | tee -a "$LOG_FILE"
+CMAKE_EXIT=${PIPESTATUS[0]}
+if [[ $CMAKE_EXIT -ne 0 ]]; then
     echo ""
-    echo -e "${RED}${BOLD}✘ Ошибка cmake! Последние строки лога:${NC}"
-    tail -30 "$LOG_FILE"
-    echo ""
-    die "Сборка не удалась. Полный лог: $LOG_FILE"
+    die "cmake завершился с ошибкой (код $CMAKE_EXIT). Лог: $LOG_FILE"
 fi
 ok "cmake конфигурация завершена"
 
-info "Компиляция (это займёт 20–40 мин, подожди)..."
-if ! ninja -C "$BUILD_TMP" -j"$(nproc)" >> "$LOG_FILE" 2>&1; then
+info "Компиляция (20–40 мин, прогресс виден ниже)..."
+echo "--- ninja build log ---" >> "$LOG_FILE"
+ninja -C "$BUILD_TMP" -j"$(nproc)" 2>&1 | tee -a "$LOG_FILE"
+NINJA_EXIT=${PIPESTATUS[0]}
+if [[ $NINJA_EXIT -ne 0 ]]; then
     echo ""
-    echo -e "${RED}${BOLD}✘ Ошибка компиляции! Последние строки лога:${NC}"
-    tail -30 "$LOG_FILE"
-    echo ""
-    die "Сборка не удалась. Полный лог: $LOG_FILE"
+    die "Компиляция завершилась с ошибкой (код $NINJA_EXIT). Лог: $LOG_FILE"
 fi
 ok "Компиляция завершена"
 
 info "Установка файлов..."
-if ! ninja -C "$BUILD_TMP" install >> "$LOG_FILE" 2>&1; then
-    echo ""
-    echo -e "${RED}${BOLD}✘ Ошибка установки! Последние строки лога:${NC}"
-    tail -30 "$LOG_FILE"
-    echo ""
-    die "Установка не удалась. Полный лог: $LOG_FILE"
+ninja -C "$BUILD_TMP" install 2>&1 | tee -a "$LOG_FILE"
+INSTALL_EXIT=${PIPESTATUS[0]}
+if [[ $INSTALL_EXIT -ne 0 ]]; then
+    die "Установка завершилась с ошибкой. Лог: $LOG_FILE"
 fi
 
 chown -R "$BIGSCREEN_USER:$BIGSCREEN_USER" "$BUILD_DIR"
